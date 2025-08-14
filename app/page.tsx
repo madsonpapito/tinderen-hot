@@ -537,24 +537,31 @@ export default function SigiloX() {
   }
 
   const handlePhoneChange = (value: string) => {
-    setPhoneNumber(value);
-  };
-
-  // 2. Este bloco "observa" o usuário digitar e CHAMA A API depois que ele para.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Só executa se o número não estiver vazio
-      if (phoneNumber) {
-        const cleanPhone = phoneNumber.replace(/[^0-9]/g, "");
-        if (cleanPhone.length >= 11) {
-          fetchWhatsAppPhoto(cleanPhone);
-        }
+    // Ensure the value starts with the selected country code
+    let formattedValue = value
+    if (!value.startsWith(selectedCountry.code)) {
+      // If user is typing a number without country code, prepend it
+      if (value && !value.startsWith("+")) {
+        formattedValue = selectedCountry.code + " " + value
+      } else if (value.startsWith("+") && !value.startsWith(selectedCountry.code)) {
+        // User typed a different country code, keep it as is
+        formattedValue = value
+      } else {
+        formattedValue = selectedCountry.code + " " + value.replace(selectedCountry.code, "").trim()
       }
-    }, 800); // <-- Espera 0.8 segundos depois que o usuário para de digitar
+    }
 
-    // Limpa o timer se o usuário digitar de novo
-    return () => clearTimeout(timer);
-  }, [phoneNumber]); // <-- Dispara toda vez que o número do telefone muda
+    setPhoneNumber(formattedValue)
+
+    // Extract just the numbers for API call
+    const cleanPhone = formattedValue.replace(/[^0-9]/g, "")
+    if (cleanPhone.length >= 10) {
+      fetchWhatsAppPhoto(cleanPhone)
+    } else {
+      setProfilePhoto(null)
+      setIsPhotoPrivate(false)
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1844,7 +1851,7 @@ export default function SigiloX() {
 
                     {/* Direct Checkout Button - Fixed Text Overflow */}
                     <Button
-                      onClick={() => window.open("https://pay.hotmart.com/J101118910Q?checkoutMode=10", "_blank")}
+                      onClick={() => window.open("https://pay.hotmart.com/J101118910Q?checkoutMode=10=", "_blank")}
                       className="w-full bg-gradient-to-r from-[#FF0066] to-[#FF3333] hover:from-[#FF0066] hover:to-[#FF3333] text-white font-bold py-3 sm:py-4 text-sm sm:text-base md:text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 mb-4 sm:mb-6 overflow-hidden"
                     >
                       <span className="block text-center leading-tight px-2">🔓 UNLOCK MY COMPLETE REPORT</span>
